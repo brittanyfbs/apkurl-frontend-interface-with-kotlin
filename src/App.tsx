@@ -104,13 +104,13 @@ const BottomNavbar = ({ current, setScreen }: { current: Screen, setScreen: (s: 
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-6 py-3 flex justify-between items-center z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+    <div className="fixed bottom-0 left-0 right-0 bg-[#070B15] px-6 py-4 flex justify-between items-center z-50 shadow-2xl">
       {tabs.map((tab) => (
         <button
           key={tab.id}
           onClick={() => setScreen(tab.id as Screen)}
           className={`flex flex-col items-center gap-1 transition-colors ${
-            current === tab.id ? 'text-[#2F6BFF]' : 'text-gray-400'
+            current === tab.id ? 'text-white' : 'text-gray-500'
           }`}
         >
           <tab.icon size={24} strokeWidth={current === tab.id ? 2.5 : 2} />
@@ -121,19 +121,52 @@ const BottomNavbar = ({ current, setScreen }: { current: Screen, setScreen: (s: 
   );
 };
 
-const Header = ({ title, subtitle, onBack }: { title: string, subtitle?: string, onBack?: () => void }) => (
-  <div className="flex items-center gap-4 mb-8">
-    {onBack && (
-      <button 
-        onClick={onBack}
-        className="p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors"
-      >
-        <ChevronLeft size={24} className="text-gray-800" />
-      </button>
-    )}
-    <div>
-      <h1 className="text-2xl font-bold text-gray-900 leading-tight">{title}</h1>
-      {subtitle && <p className="text-sm font-medium text-gray-500">{subtitle}</p>}
+const LockShieldLogo = ({ size = 24 }: { size?: number }) => (
+  <svg 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2.5" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+    className="text-white"
+  >
+    <path d="M7 10V7a5 5 0 0 1 10 0v3" />
+    <path d="M12 22s7-4 7-10V6l-7-2-7 2v6c0 6 7 10 7 10z" />
+  </svg>
+);
+
+const Header = ({ title, subtitle, onBack, rightAction, customLogo, showLogo = true }: { title: string, subtitle?: string, onBack?: () => void, rightAction?: React.ReactNode, customLogo?: string | null, showLogo?: boolean }) => (
+  <div className="fixed top-0 left-0 right-0 bg-[#070B15] px-6 py-4 z-[60] shadow-lg">
+    <div className="max-w-md mx-auto flex items-center gap-4">
+      {onBack && (
+        <button 
+          onClick={onBack}
+          className="p-2 -ml-2 rounded-full hover:bg-white/10 transition-colors"
+        >
+          <ChevronLeft size={24} className="text-white" />
+        </button>
+      )}
+      <div className="flex-1 min-w-0 flex items-center gap-3">
+        {showLogo && (
+          customLogo ? (
+            <img src={customLogo} alt="Logo" className="w-8 h-8 object-contain rounded-lg brightness-0 invert" />
+          ) : (
+            <LockShieldLogo size={28} />
+          )
+        )}
+        <div className="flex flex-col">
+          <h1 className="text-2xl font-black text-white leading-tight tracking-[0.05em] uppercase truncate">{title}</h1>
+          {subtitle && <p className="text-[10px] font-medium text-gray-400">{subtitle}</p>}
+        </div>
+      </div>
+      {rightAction && (
+        <div className="flex-shrink-0">
+          {rightAction}
+        </div>
+      )}
     </div>
   </div>
 );
@@ -144,12 +177,14 @@ const HomeScreen = ({
   setScreen, 
   setScanType, 
   historyItems,
-  onViewReport
+  onViewReport,
+  customLogo
 }: { 
   setScreen: (s: Screen) => void, 
   setScanType: (t: ScanType) => void, 
   historyItems: HistoryItem[],
-  onViewReport: (item: HistoryItem) => void
+  onViewReport: (item: HistoryItem) => void,
+  customLogo: string | null
 }) => {
   const totalScans = historyItems.length;
   const highRisks = historyItems.filter(item => item.risk === 'high').length;
@@ -157,9 +192,10 @@ const HomeScreen = ({
 
   return (
     <div className="flex flex-col gap-6 pb-24">
-      <div className="flex flex-col mb-8 -mt-6">
-        <span className="text-sm font-black text-gray-900 uppercase tracking-[0.4em] mb-4">APKURL</span>
-        <h1 className="text-4xl font-black text-gray-900 leading-tight">Security Center</h1>
+      <Header title="APKURL" customLogo={customLogo} />
+      
+      <div className="flex flex-col mb-4">
+        <h1 className="text-3xl font-black text-gray-900 leading-tight">Security Center</h1>
       </div>
 
       {/* Quick Scan Cards */}
@@ -197,7 +233,7 @@ const HomeScreen = ({
           </div>
         </div>
         <div className="pt-4 border-t border-gray-800">
-          <p className="text-[11px] font-medium text-gray-400 text-center">
+          <p className="text-[11px] font-medium text-gray-400 text-left">
             Last Scan Activity: <span className="text-gray-300">{historyItems.length > 0 ? historyItems[0].time : 'No activity yet'}</span>
           </p>
         </div>
@@ -244,12 +280,12 @@ const HomeScreen = ({
   );
 };
 
-const URLScannerScreen = ({ onBack, onStart }: { onBack: () => void, onStart: (target: string) => void }) => {
+const URLScannerScreen = ({ onBack, onStart, customLogo }: { onBack: () => void, onStart: (target: string) => void, customLogo: string | null }) => {
   const [url, setUrl] = useState('');
 
   return (
     <div className="flex flex-col gap-6">
-      <Header title="URL Scanner" onBack={onBack} />
+      <Header title="HISTORY" onBack={onBack} showLogo={false} />
       
       <p className="text-sm font-medium text-gray-500 leading-relaxed text-center">
         Enter a URL below and tap the button to start scanning.
@@ -281,7 +317,7 @@ const URLScannerScreen = ({ onBack, onStart }: { onBack: () => void, onStart: (t
   );
 };
 
-const APKScannerScreen = ({ onBack, onStart }: { onBack: () => void, onStart: (target: string) => void }) => {
+const APKScannerScreen = ({ onBack, onStart, customLogo }: { onBack: () => void, onStart: (target: string) => void, customLogo: string | null }) => {
   const [fileSelected, setFileSelected] = useState(false);
   const [fileName, setFileName] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -296,7 +332,7 @@ const APKScannerScreen = ({ onBack, onStart }: { onBack: () => void, onStart: (t
 
   return (
     <div className="flex flex-col gap-6">
-      <Header title="APK Scanner" onBack={onBack} />
+      <Header title="HISTORY" onBack={onBack} showLogo={false} />
       
       <input 
         type="file" 
@@ -340,7 +376,7 @@ const APKScannerScreen = ({ onBack, onStart }: { onBack: () => void, onStart: (t
   );
 };
 
-const ScanningScreen = ({ type }: { type: ScanType }) => {
+const ScanningScreen = ({ type, customLogo }: { type: ScanType, customLogo: string | null }) => {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
@@ -352,6 +388,7 @@ const ScanningScreen = ({ type }: { type: ScanType }) => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[70vh] gap-10 text-center">
+      
       <div className="relative w-48 h-48">
         {/* Progress Ring */}
         <svg className="w-full h-full -rotate-90">
@@ -398,12 +435,14 @@ const HistoryScreen = ({
   items, 
   onDeleteItems, 
   onDeleteAll,
-  onViewReport
+  onViewReport,
+  customLogo
 }: { 
   items: HistoryItem[], 
   onDeleteItems: (ids: number[]) => void,
   onDeleteAll: () => void,
-  onViewReport: (item: HistoryItem) => void
+  onViewReport: (item: HistoryItem) => void,
+  customLogo: string | null
 }) => {
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -435,32 +474,35 @@ const HistoryScreen = ({
 
   return (
     <div className="flex flex-col gap-6 pb-24">
-      <div className="flex justify-between items-start">
-        <Header title="Scan History" />
-        <div className="flex items-center gap-2">
-          <button 
-            onClick={() => {
-              setIsSelectionMode(!isSelectionMode);
-              setSelectedIds([]);
-            }}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-              isSelectionMode ? 'bg-blue-500 text-white' : 'bg-white text-gray-500 shadow-sm'
-            }`}
-          >
-            {isSelectionMode ? 'Cancel' : 'Select'}
-          </button>
-          <button 
-            onClick={() => handleDeleteClick(isSelectionMode ? 'selected' : 'all')}
-            className={`p-2 rounded-xl shadow-sm transition-colors ${
-              (isSelectionMode && selectedIds.length > 0) || (!isSelectionMode && items.length > 0)
-                ? 'bg-white text-red-500 hover:bg-red-50' 
-                : 'bg-gray-50 text-gray-300 cursor-not-allowed'
-            }`}
-          >
-            <Trash2 size={20} />
-          </button>
-        </div>
-      </div>
+      <Header 
+        title="HISTORY" 
+        showLogo={false}
+        rightAction={
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => {
+                setIsSelectionMode(!isSelectionMode);
+                setSelectedIds([]);
+              }}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                isSelectionMode ? 'bg-blue-500 text-white' : 'bg-white/10 text-white'
+              }`}
+            >
+              {isSelectionMode ? 'Cancel' : 'Select'}
+            </button>
+            <button 
+              onClick={() => handleDeleteClick(isSelectionMode ? 'selected' : 'all')}
+              className={`p-2 rounded-xl shadow-sm transition-colors ${
+                (isSelectionMode && selectedIds.length > 0) || (!isSelectionMode && items.length > 0)
+                  ? 'bg-white/10 text-red-400 hover:bg-red-500/20' 
+                  : 'bg-white/5 text-gray-600 cursor-not-allowed'
+              }`}
+            >
+              <Trash2 size={20} />
+            </button>
+          </div>
+        }
+      />
 
       {items.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center opacity-40">
@@ -524,7 +566,7 @@ const HistoryScreen = ({
   );
 };
 
-const URLResultScreen = ({ item, onBack, onClose }: { item: HistoryItem, onBack: () => void, onClose: () => void }) => {
+const URLResultScreen = ({ item, onBack, onClose, customLogo }: { item: HistoryItem, onBack: () => void, onClose: () => void, customLogo: string | null }) => {
   const isHighRisk = item.risk === 'high';
   const riskColor = isHighRisk ? 'bg-red-500' : 'bg-[#3D8C40]';
   const darkRiskColor = isHighRisk ? 'bg-red-600' : 'bg-[#317033]';
@@ -533,10 +575,11 @@ const URLResultScreen = ({ item, onBack, onClose }: { item: HistoryItem, onBack:
   return (
     <div className="flex flex-col gap-6 pb-12 min-h-screen bg-[#F8F9FD]">
       {/* Top Bar */}
-      <div className="flex justify-between items-center py-4 px-2">
-        <h1 className="text-xl font-bold text-gray-900">Security Report</h1>
-        <button onClick={onClose} className="text-blue-600 font-bold text-sm">Done</button>
-      </div>
+      <Header 
+        title="REPORT" 
+        showLogo={false}
+        rightAction={<button onClick={onClose} className="text-blue-400 font-bold text-sm">Done</button>} 
+      />
 
       {/* Main Risk Card */}
       <div className={`${riskColor} rounded-[24px] p-8 flex flex-col items-center gap-8 shadow-lg shadow-green-100/50`}>
@@ -591,7 +634,7 @@ const URLResultScreen = ({ item, onBack, onClose }: { item: HistoryItem, onBack:
   );
 };
 
-const APKResultScreen = ({ item, onBack, onClose }: { item: HistoryItem, onBack: () => void, onClose: () => void }) => {
+const APKResultScreen = ({ item, onBack, onClose, customLogo }: { item: HistoryItem, onBack: () => void, onClose: () => void, customLogo: string | null }) => {
   const isHighRisk = item.risk === 'high';
   const riskColor = isHighRisk ? 'bg-red-500' : 'bg-[#3D8C40]';
   const darkRiskColor = isHighRisk ? 'bg-red-600' : 'bg-[#317033]';
@@ -600,10 +643,11 @@ const APKResultScreen = ({ item, onBack, onClose }: { item: HistoryItem, onBack:
   return (
     <div className="flex flex-col gap-6 pb-12 min-h-screen bg-[#F8F9FD]">
       {/* Top Bar */}
-      <div className="flex justify-between items-center py-4 px-2">
-        <h1 className="text-xl font-bold text-gray-900">Security Report</h1>
-        <button onClick={onClose} className="text-blue-600 font-bold text-sm">Done</button>
-      </div>
+      <Header 
+        title="REPORT" 
+        showLogo={false}
+        rightAction={<button onClick={onClose} className="text-blue-400 font-bold text-sm">Done</button>} 
+      />
 
       {/* Main Risk Card */}
       <div className={`${riskColor} rounded-[24px] p-8 flex flex-col items-center gap-8 shadow-lg shadow-green-100/50`}>
@@ -658,10 +702,10 @@ const APKResultScreen = ({ item, onBack, onClose }: { item: HistoryItem, onBack:
   );
 };
 
-const SettingsScreen = () => {
+const SettingsScreen = ({ customLogo }: { customLogo: string | null }) => {
   return (
     <div className="flex flex-col gap-8 pb-24">
-      <Header title="Settings" />
+      <Header title="SETTINGS" showLogo={false} />
 
       <div className="flex flex-col gap-4">
         <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] px-1">Support & Info</h3>
@@ -701,6 +745,9 @@ const SettingsScreen = () => {
 export default function App() {
   const [screen, setScreen] = useState<Screen>('home');
   const [scanType, setScanType] = useState<ScanType>('url');
+  const [customLogo, setCustomLogo] = useState<string | null>(() => {
+    return localStorage.getItem('apkurl_custom_logo');
+  });
   const [currentResult, setCurrentResult] = useState<HistoryItem | null>(null);
   const [historyItems, setHistoryItems] = useState<HistoryItem[]>([
     { id: 1, type: 'apk', target: 'com.example.app_v2.apk', hash: '8f2a...b3c1', risk: 'high', time: '2 mins ago' },
@@ -740,7 +787,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#F8F9FD] font-sans text-gray-900 selection:bg-blue-100">
-      <div className="max-w-md mx-auto px-6 pt-12 min-h-screen relative overflow-hidden">
+      <div className="max-w-md mx-auto px-6 pt-24 pb-32 min-h-screen relative overflow-hidden">
         
         <AnimatePresence mode="wait">
           <motion.div
@@ -756,16 +803,17 @@ export default function App() {
                 setScanType={setScanType} 
                 historyItems={historyItems} 
                 onViewReport={handleViewReport}
+                customLogo={customLogo}
               />
             )}
             {screen === 'url-scanner' && (
-              <URLScannerScreen onBack={() => setScreen('home')} onStart={handleStartScan} />
+              <URLScannerScreen onBack={() => setScreen('home')} onStart={handleStartScan} customLogo={customLogo} />
             )}
             {screen === 'apk-scanner' && (
-              <APKScannerScreen onBack={() => setScreen('home')} onStart={handleStartScan} />
+              <APKScannerScreen onBack={() => setScreen('home')} onStart={handleStartScan} customLogo={customLogo} />
             )}
             {screen === 'scanning' && (
-              <ScanningScreen type={scanType} />
+              <ScanningScreen type={scanType} customLogo={customLogo} />
             )}
             {screen === 'history' && (
               <HistoryScreen 
@@ -773,16 +821,18 @@ export default function App() {
                 onDeleteItems={deleteItems}
                 onDeleteAll={deleteAll}
                 onViewReport={handleViewReport}
+                customLogo={customLogo}
               />
             )}
             {screen === 'settings' && (
-              <SettingsScreen />
+              <SettingsScreen customLogo={customLogo} />
             )}
             {screen === 'url-result' && currentResult && (
               <URLResultScreen 
                 item={currentResult} 
                 onBack={() => setScreen('home')} 
                 onClose={() => setScreen('home')} 
+                customLogo={customLogo}
               />
             )}
             {screen === 'apk-result' && currentResult && (
@@ -790,6 +840,7 @@ export default function App() {
                 item={currentResult} 
                 onBack={() => setScreen('home')} 
                 onClose={() => setScreen('home')} 
+                customLogo={customLogo}
               />
             )}
           </motion.div>
