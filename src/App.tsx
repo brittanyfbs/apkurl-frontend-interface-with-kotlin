@@ -104,13 +104,13 @@ const BottomNavbar = ({ current, setScreen }: { current: Screen, setScreen: (s: 
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-[#070B15] px-6 py-4 flex justify-between items-center z-50 shadow-2xl">
+    <div className="fixed bottom-0 left-0 right-0 bg-white px-6 py-4 flex justify-between items-center z-50 border-t border-gray-100 shadow-[0_0_25px_rgba(47,107,255,0.2)]">
       {tabs.map((tab) => (
         <button
           key={tab.id}
           onClick={() => setScreen(tab.id as Screen)}
           className={`flex flex-col items-center gap-1 transition-colors ${
-            current === tab.id ? 'text-white' : 'text-gray-500'
+            current === tab.id ? 'text-black' : 'text-black/50'
           }`}
         >
           <tab.icon size={24} strokeWidth={current === tab.id ? 2.5 : 2} />
@@ -121,7 +121,7 @@ const BottomNavbar = ({ current, setScreen }: { current: Screen, setScreen: (s: 
   );
 };
 
-const LockShieldLogo = ({ size = 24 }: { size?: number }) => (
+const LockShieldLogo = ({ size = 24, className = "text-black" }: { size?: number, className?: string }) => (
   <svg 
     width={size} 
     height={size} 
@@ -131,7 +131,7 @@ const LockShieldLogo = ({ size = 24 }: { size?: number }) => (
     strokeWidth="2.5" 
     strokeLinecap="round" 
     strokeLinejoin="round"
-    className="text-white"
+    className={className}
   >
     <path d="M7 10V7a5 5 0 0 1 10 0v3" />
     <path d="M12 22s7-4 7-10V6l-7-2-7 2v6c0 6 7 10 7 10z" />
@@ -139,27 +139,29 @@ const LockShieldLogo = ({ size = 24 }: { size?: number }) => (
 );
 
 const Header = ({ title, subtitle, onBack, rightAction, customLogo, showLogo = true }: { title: string, subtitle?: string, onBack?: () => void, rightAction?: React.ReactNode, customLogo?: string | null, showLogo?: boolean }) => (
-  <div className="fixed top-0 left-0 right-0 bg-[#070B15] px-6 py-4 z-[60] shadow-lg">
+  <div className="fixed top-0 left-0 right-0 bg-white px-6 py-4 z-[60] border-b border-gray-100 shadow-[0_0_25px_rgba(47,107,255,0.2)]">
     <div className="max-w-md mx-auto flex items-center gap-4">
       {onBack && (
         <button 
           onClick={onBack}
-          className="p-2 -ml-2 rounded-full hover:bg-white/10 transition-colors"
+          className="p-2 -ml-2 rounded-full hover:bg-black/10 transition-colors"
         >
-          <ChevronLeft size={24} className="text-white" />
+          <ChevronLeft size={24} className="text-black" />
         </button>
       )}
       <div className="flex-1 min-w-0 flex items-center gap-3">
         {showLogo && (
-          customLogo ? (
-            <img src={customLogo} alt="Logo" className="w-8 h-8 object-contain rounded-lg brightness-0 invert" />
-          ) : (
-            <LockShieldLogo size={28} />
-          )
+          <div className="w-10 h-10 rounded-full bg-[#2F6BFF] flex items-center justify-center flex-shrink-0 shadow-sm">
+            {customLogo ? (
+              <img src={customLogo} alt="Logo" className="w-6 h-6 object-contain brightness-0" />
+            ) : (
+              <LockShieldLogo size={22} />
+            )}
+          </div>
         )}
         <div className="flex flex-col">
-          <h1 className="text-2xl font-black text-white leading-tight tracking-[0.05em] uppercase truncate">{title}</h1>
-          {subtitle && <p className="text-[10px] font-medium text-gray-400">{subtitle}</p>}
+          <h1 className="text-2xl font-black text-black leading-tight tracking-[0.05em] uppercase truncate">{title}</h1>
+          {subtitle && <p className="text-[10px] font-medium text-black/70">{subtitle}</p>}
         </div>
       </div>
       {rightAction && (
@@ -285,7 +287,7 @@ const URLScannerScreen = ({ onBack, onStart, customLogo }: { onBack: () => void,
 
   return (
     <div className="flex flex-col gap-6">
-      <Header title="HISTORY" onBack={onBack} showLogo={false} />
+      <Header title="URL SCANNER" onBack={onBack} showLogo={false} />
       
       <p className="text-sm font-medium text-gray-500 leading-relaxed text-center">
         Enter a URL below and tap the button to start scanning.
@@ -332,7 +334,7 @@ const APKScannerScreen = ({ onBack, onStart, customLogo }: { onBack: () => void,
 
   return (
     <div className="flex flex-col gap-6">
-      <Header title="HISTORY" onBack={onBack} showLogo={false} />
+      <Header title="APK SCANNER" onBack={onBack} showLogo={false} />
       
       <input 
         type="file" 
