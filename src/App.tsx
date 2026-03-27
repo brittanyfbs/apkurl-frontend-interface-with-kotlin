@@ -525,52 +525,64 @@ const HistoryScreen = ({
 };
 
 const URLResultScreen = ({ item, onBack, onClose }: { item: HistoryItem, onBack: () => void, onClose: () => void }) => {
+  const isHighRisk = item.risk === 'high';
+  const riskColor = isHighRisk ? 'bg-red-500' : 'bg-[#3D8C40]';
+  const darkRiskColor = isHighRisk ? 'bg-red-600' : 'bg-[#317033]';
+  const riskScore = isHighRisk ? '85%' : '15%';
+
   return (
-    <div className="flex flex-col gap-8 pb-24">
-      <Header title="Report" onBack={onBack} />
-      
-      <div className="flex flex-col items-center gap-6 py-4">
-        <div className={`w-24 h-24 rounded-[40px] flex items-center justify-center shadow-lg ${
-          item.risk === 'high' ? 'bg-red-50 text-red-500 shadow-red-100' : 'bg-green-50 text-green-500 shadow-green-100'
-        }`}>
-          {item.risk === 'high' ? <AlertTriangle size={48} /> : <CheckCircle2 size={48} />}
-        </div>
-        <div className="text-center flex flex-col gap-2">
-          <h2 className={`text-3xl font-black uppercase tracking-tighter ${
-            item.risk === 'high' ? 'text-red-500' : 'text-green-500'
-          }`}>
-            {item.risk} Risk Detected
-          </h2>
-          <p className="text-sm font-bold text-gray-400 truncate max-w-[280px] mx-auto">{item.target}</p>
-        </div>
+    <div className="flex flex-col gap-6 pb-12 min-h-screen bg-[#F8F9FD]">
+      {/* Top Bar */}
+      <div className="flex justify-between items-center py-4 px-2">
+        <h1 className="text-xl font-bold text-gray-900">Security Report</h1>
+        <button onClick={onClose} className="text-blue-600 font-bold text-sm">Done</button>
       </div>
 
-      <div className="bg-white rounded-[32px] p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-gray-50 flex flex-col gap-6">
-        <div className="flex flex-col gap-4">
-          <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Analysis Details</h3>
-          <div className="flex flex-col gap-4">
-            <div className="flex justify-between items-center py-3 border-b border-gray-50">
-              <span className="text-sm font-bold text-gray-500">Scan Type</span>
-              <span className="text-sm font-black text-gray-900 uppercase">URL Security</span>
-            </div>
-            <div className="flex justify-between items-center py-3 border-b border-gray-50">
-              <span className="text-sm font-bold text-gray-500">Status</span>
-              <span className={`text-sm font-black uppercase ${item.risk === 'high' ? 'text-red-500' : 'text-green-500'}`}>
-                {item.risk === 'high' ? 'Flagged' : 'Clean'}
-              </span>
-            </div>
-            <div className="flex justify-between items-center py-3">
-              <span className="text-sm font-bold text-gray-500">Timestamp</span>
-              <span className="text-sm font-black text-gray-900">{item.time}</span>
-            </div>
+      {/* Main Risk Card */}
+      <div className={`${riskColor} rounded-[24px] p-8 flex flex-col items-center gap-8 shadow-lg shadow-green-100/50`}>
+        <h2 className="text-3xl font-bold text-white">
+          {isHighRisk ? 'High Risk' : 'Low Risk'}
+        </h2>
+        
+        {/* Stat Box */}
+        <div className="flex justify-center w-full">
+          <div className={`${darkRiskColor} w-32 rounded-[16px] p-4 flex flex-col items-center gap-1`}>
+            <span className="text-[10px] font-bold text-white/70 uppercase tracking-wider">Risk Score</span>
+            <span className="text-2xl font-bold text-white">{riskScore}</span>
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col gap-3">
+      {/* Analysis Summary Section */}
+      <div className="flex flex-col gap-4">
+        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em]">Analysis Summary</span>
+        <div className="bg-gray-100 rounded-[20px] p-6 shadow-sm border border-gray-200/50">
+          <p className="text-sm leading-relaxed text-gray-600 font-medium">
+            {isHighRisk 
+              ? "Warning: This URL has been flagged as potentially dangerous. Our heuristic analysis detected patterns associated with phishing or malware distribution."
+              : "Analysis complete. This URL appears to be safe based on our current security database and heuristic checks."}
+          </p>
+        </div>
+      </div>
+
+      {/* Analysis Details */}
+      <div className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 flex flex-col gap-4">
+        <div className="flex justify-between items-center">
+          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Target URL</span>
+          <span className="text-xs font-bold text-gray-900 truncate max-w-[180px]">{item.target}</span>
+        </div>
+        <div className="h-[1px] bg-gray-50"></div>
+        <div className="flex justify-between items-center">
+          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Reason</span>
+          <span className="text-xs font-bold text-gray-900">{isHighRisk ? 'Suspicious Patterns' : 'Verified Safe'}</span>
+        </div>
+      </div>
+
+      {/* Bottom Button */}
+      <div className="mt-auto pt-4">
         <button 
           onClick={onClose}
-          className="w-full py-4 bg-gray-900 text-white font-bold rounded-2xl shadow-xl active:scale-[0.98] transition-all"
+          className="w-full py-5 bg-black text-white font-bold rounded-[24px] shadow-xl active:scale-[0.98] transition-all"
         >
           Close Report
         </button>
@@ -580,52 +592,64 @@ const URLResultScreen = ({ item, onBack, onClose }: { item: HistoryItem, onBack:
 };
 
 const APKResultScreen = ({ item, onBack, onClose }: { item: HistoryItem, onBack: () => void, onClose: () => void }) => {
+  const isHighRisk = item.risk === 'high';
+  const riskColor = isHighRisk ? 'bg-red-500' : 'bg-[#3D8C40]';
+  const darkRiskColor = isHighRisk ? 'bg-red-600' : 'bg-[#317033]';
+  const riskScore = isHighRisk ? '91%' : '08%';
+
   return (
-    <div className="flex flex-col gap-8 pb-24">
-      <Header title="Report" onBack={onBack} />
-      
-      <div className="flex flex-col items-center gap-6 py-4">
-        <div className={`w-24 h-24 rounded-[40px] flex items-center justify-center shadow-lg ${
-          item.risk === 'high' ? 'bg-red-50 text-red-500 shadow-red-100' : 'bg-green-50 text-green-500 shadow-green-100'
-        }`}>
-          {item.risk === 'high' ? <AlertTriangle size={48} /> : <CheckCircle2 size={48} />}
-        </div>
-        <div className="text-center flex flex-col gap-2">
-          <h2 className={`text-3xl font-black uppercase tracking-tighter ${
-            item.risk === 'high' ? 'text-red-500' : 'text-green-500'
-          }`}>
-            {item.risk} Risk Detected
-          </h2>
-          <p className="text-sm font-bold text-gray-400 truncate max-w-[280px] mx-auto">{item.target}</p>
-        </div>
+    <div className="flex flex-col gap-6 pb-12 min-h-screen bg-[#F8F9FD]">
+      {/* Top Bar */}
+      <div className="flex justify-between items-center py-4 px-2">
+        <h1 className="text-xl font-bold text-gray-900">Security Report</h1>
+        <button onClick={onClose} className="text-blue-600 font-bold text-sm">Done</button>
       </div>
 
-      <div className="bg-white rounded-[32px] p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-gray-50 flex flex-col gap-6">
-        <div className="flex flex-col gap-4">
-          <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Package Info</h3>
-          <div className="flex flex-col gap-4">
-            <div className="flex justify-between items-center py-3 border-b border-gray-50">
-              <span className="text-sm font-bold text-gray-500">File Hash</span>
-              <span className="text-sm font-black text-gray-900 font-mono">{item.hash}</span>
-            </div>
-            <div className="flex justify-between items-center py-3 border-b border-gray-50">
-              <span className="text-sm font-bold text-gray-500">Permissions</span>
-              <span className="text-sm font-black text-gray-900 uppercase">Analyzed</span>
-            </div>
-            <div className="flex justify-between items-center py-3">
-              <span className="text-sm font-bold text-gray-500">Threat Level</span>
-              <span className={`text-sm font-black uppercase ${item.risk === 'high' ? 'text-red-500' : 'text-green-500'}`}>
-                {item.risk === 'high' ? 'Critical' : 'Safe'}
-              </span>
-            </div>
+      {/* Main Risk Card */}
+      <div className={`${riskColor} rounded-[24px] p-8 flex flex-col items-center gap-8 shadow-lg shadow-green-100/50`}>
+        <h2 className="text-3xl font-bold text-white">
+          {isHighRisk ? 'High Risk' : 'Low Risk'}
+        </h2>
+        
+        {/* Stat Box */}
+        <div className="flex justify-center w-full">
+          <div className={`${darkRiskColor} w-32 rounded-[16px] p-4 flex flex-col items-center gap-1`}>
+            <span className="text-[10px] font-bold text-white/70 uppercase tracking-wider">Risk Score</span>
+            <span className="text-2xl font-bold text-white">{riskScore}</span>
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col gap-3">
+      {/* Analysis Summary Section */}
+      <div className="flex flex-col gap-4">
+        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em]">Analysis Summary</span>
+        <div className="bg-gray-100 rounded-[20px] p-6 shadow-sm border border-gray-200/50">
+          <p className="text-sm leading-relaxed text-gray-600 font-medium">
+            {isHighRisk 
+              ? "Critical: This APK file contains suspicious code patterns and requested excessive permissions that could compromise your device security."
+              : "Analysis complete. This APK file appears to be safe based on our current security database and heuristic checks."}
+          </p>
+        </div>
+      </div>
+
+      {/* Package Info */}
+      <div className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 flex flex-col gap-4">
+        <div className="flex justify-between items-center">
+          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Package Name</span>
+          <span className="text-xs font-bold text-gray-900 truncate max-w-[180px]">{item.target}</span>
+        </div>
+        <div className="h-[1px] bg-gray-50"></div>
+        <div className="flex justify-between items-center">
+          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Reason</span>
+          <span className="text-xs font-bold text-gray-900">{isHighRisk ? 'Suspicious Permissions' : 'Verified Safe'}</span>
+        </div>
+      </div>
+
+      {/* Bottom Button */}
+      <div className="mt-auto pt-4">
         <button 
           onClick={onClose}
-          className="w-full py-4 bg-gray-900 text-white font-bold rounded-2xl shadow-xl active:scale-[0.98] transition-all"
+          className="w-full py-5 bg-black text-white font-bold rounded-[24px] shadow-xl active:scale-[0.98] transition-all"
         >
           Close Report
         </button>
