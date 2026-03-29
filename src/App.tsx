@@ -577,8 +577,8 @@ const URLResultScreen = ({ item, onBack, onClose, customLogo }: { item: HistoryI
   const darkRiskColor = isHighRisk ? 'bg-red-600' : 'bg-[#317033]';
   
   // Dynamic values with fallbacks
-  const riskScore = (item.score ?? 0) + '%';
-  const summary = item.summary || "No summary available.";
+  const riskScore = (item.score ?? 50) + '%';
+  const summary = item.summary || "No summary available";
   const reason = item.reason || "Unknown";
 
   return (
@@ -593,7 +593,7 @@ const URLResultScreen = ({ item, onBack, onClose, customLogo }: { item: HistoryI
       {/* Main Risk Card */}
       <div className={`${riskColor} rounded-[24px] p-8 flex flex-col items-center gap-8 shadow-lg shadow-green-100/50`}>
         <h2 className="text-3xl font-bold text-white uppercase tracking-tight">
-          {isHighRisk ? 'High Risk' : 'Low Risk'}
+          {item.risk.toUpperCase()} RISK
         </h2>
         
         {/* Stat Box */}
@@ -647,8 +647,8 @@ const APKResultScreen = ({ item, onBack, onClose, customLogo }: { item: HistoryI
   const darkRiskColor = isHighRisk ? 'bg-red-600' : 'bg-[#317033]';
   
   // Dynamic values with fallbacks
-  const riskScore = (item.score ?? 0) + '%';
-  const summary = item.summary || "No summary available.";
+  const riskScore = (item.score ?? 50) + '%';
+  const summary = item.summary || "No summary available";
   const reason = item.reason || "Unknown";
 
   return (
@@ -663,7 +663,7 @@ const APKResultScreen = ({ item, onBack, onClose, customLogo }: { item: HistoryI
       {/* Main Risk Card */}
       <div className={`${riskColor} rounded-[24px] p-8 flex flex-col items-center gap-8 shadow-lg shadow-green-100/50`}>
         <h2 className="text-3xl font-bold text-white uppercase tracking-tight">
-          {isHighRisk ? 'High Risk' : 'Low Risk'}
+          {item.risk.toUpperCase()} RISK
         </h2>
         
         {/* Stat Box */}
@@ -801,28 +801,18 @@ export default function App() {
   const handleStartScan = (target: string) => {
     setScreen('scanning');
     
-    // Mocking a backend response structure
+    // Static demo data for UI design phase
     // This will be replaced with an actual API call later
     setTimeout(() => {
-      const isDemoHighRisk = target.toLowerCase().includes('malware') || target.toLowerCase().includes('danger');
-      
       const newItem: HistoryItem = {
         id: Date.now(),
         type: scanType,
         target: target,
         hash: scanType === 'apk' ? 'a1b2...c3d4' : undefined,
-        risk: isDemoHighRisk ? 'high' : 'low',
-        score: isDemoHighRisk ? 91 : 8,
-        summary: isDemoHighRisk 
-          ? (scanType === 'url' 
-              ? "Warning: This URL has been flagged as potentially dangerous. Our heuristic analysis detected patterns associated with phishing or malware distribution."
-              : "Critical: This APK file contains suspicious code patterns and requested excessive permissions that could compromise your device security.")
-          : (scanType === 'url'
-              ? "Analysis complete. This URL appears to be safe based on our current security database and heuristic checks."
-              : "Analysis complete. This APK file appears to be safe based on our current security database and heuristic checks."),
-        reason: isDemoHighRisk 
-          ? (scanType === 'url' ? 'Suspicious Patterns' : 'Suspicious Permissions')
-          : 'Verified Safe',
+        risk: "high",
+        score: 91,
+        summary: "This APK file contains suspicious permissions and may be harmful.",
+        reason: "Suspicious Permissions",
         time: 'Just now'
       };
       
