@@ -31,6 +31,9 @@ interface HistoryItem {
   target: string;
   hash?: string;
   risk: 'high' | 'low';
+  score: number;
+  summary: string;
+  reason: string;
   time: string;
 }
 
@@ -572,7 +575,11 @@ const URLResultScreen = ({ item, onBack, onClose, customLogo }: { item: HistoryI
   const isHighRisk = item.risk === 'high';
   const riskColor = isHighRisk ? 'bg-red-500' : 'bg-[#3D8C40]';
   const darkRiskColor = isHighRisk ? 'bg-red-600' : 'bg-[#317033]';
-  const riskScore = isHighRisk ? '85%' : '15%';
+  
+  // Dynamic values with fallbacks
+  const riskScore = (item.score ?? 0) + '%';
+  const summary = item.summary || "No summary available.";
+  const reason = item.reason || "Unknown";
 
   return (
     <div className="flex flex-col gap-6 pb-12 min-h-screen bg-[#F8F9FD]">
@@ -585,7 +592,7 @@ const URLResultScreen = ({ item, onBack, onClose, customLogo }: { item: HistoryI
 
       {/* Main Risk Card */}
       <div className={`${riskColor} rounded-[24px] p-8 flex flex-col items-center gap-8 shadow-lg shadow-green-100/50`}>
-        <h2 className="text-3xl font-bold text-white">
+        <h2 className="text-3xl font-bold text-white uppercase tracking-tight">
           {isHighRisk ? 'High Risk' : 'Low Risk'}
         </h2>
         
@@ -603,9 +610,7 @@ const URLResultScreen = ({ item, onBack, onClose, customLogo }: { item: HistoryI
         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em]">Analysis Summary</span>
         <div className="bg-gray-100 rounded-[20px] p-6 shadow-sm border border-gray-200/50">
           <p className="text-sm leading-relaxed text-gray-600 font-medium">
-            {isHighRisk 
-              ? "Warning: This URL has been flagged as potentially dangerous. Our heuristic analysis detected patterns associated with phishing or malware distribution."
-              : "Analysis complete. This URL appears to be safe based on our current security database and heuristic checks."}
+            {summary}
           </p>
         </div>
       </div>
@@ -619,7 +624,7 @@ const URLResultScreen = ({ item, onBack, onClose, customLogo }: { item: HistoryI
         <div className="h-[1px] bg-gray-50"></div>
         <div className="flex justify-between items-center">
           <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Reason</span>
-          <span className="text-xs font-bold text-gray-900">{isHighRisk ? 'Suspicious Patterns' : 'Verified Safe'}</span>
+          <span className="text-xs font-bold text-gray-900">{reason}</span>
         </div>
       </div>
 
@@ -640,7 +645,11 @@ const APKResultScreen = ({ item, onBack, onClose, customLogo }: { item: HistoryI
   const isHighRisk = item.risk === 'high';
   const riskColor = isHighRisk ? 'bg-red-500' : 'bg-[#3D8C40]';
   const darkRiskColor = isHighRisk ? 'bg-red-600' : 'bg-[#317033]';
-  const riskScore = isHighRisk ? '91%' : '8%';
+  
+  // Dynamic values with fallbacks
+  const riskScore = (item.score ?? 0) + '%';
+  const summary = item.summary || "No summary available.";
+  const reason = item.reason || "Unknown";
 
   return (
     <div className="flex flex-col gap-6 pb-12 min-h-screen bg-[#F8F9FD]">
@@ -653,7 +662,7 @@ const APKResultScreen = ({ item, onBack, onClose, customLogo }: { item: HistoryI
 
       {/* Main Risk Card */}
       <div className={`${riskColor} rounded-[24px] p-8 flex flex-col items-center gap-8 shadow-lg shadow-green-100/50`}>
-        <h2 className="text-3xl font-bold text-white">
+        <h2 className="text-3xl font-bold text-white uppercase tracking-tight">
           {isHighRisk ? 'High Risk' : 'Low Risk'}
         </h2>
         
@@ -671,9 +680,7 @@ const APKResultScreen = ({ item, onBack, onClose, customLogo }: { item: HistoryI
         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em]">Analysis Summary</span>
         <div className="bg-gray-100 rounded-[20px] p-6 shadow-sm border border-gray-200/50">
           <p className="text-sm leading-relaxed text-gray-600 font-medium">
-            {isHighRisk 
-              ? "Critical: This APK file contains suspicious code patterns and requested excessive permissions that could compromise your device security."
-              : "Analysis complete. This APK file appears to be safe based on our current security database and heuristic checks."}
+            {summary}
           </p>
         </div>
       </div>
@@ -687,7 +694,7 @@ const APKResultScreen = ({ item, onBack, onClose, customLogo }: { item: HistoryI
         <div className="h-[1px] bg-gray-50"></div>
         <div className="flex justify-between items-center">
           <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Reason</span>
-          <span className="text-xs font-bold text-gray-900">{isHighRisk ? 'Suspicious Permissions' : 'Verified Safe'}</span>
+          <span className="text-xs font-bold text-gray-900">{reason}</span>
         </div>
       </div>
 
@@ -793,15 +800,32 @@ export default function App() {
 
   const handleStartScan = (target: string) => {
     setScreen('scanning');
+    
+    // Mocking a backend response structure
+    // This will be replaced with an actual API call later
     setTimeout(() => {
+      const isDemoHighRisk = target.toLowerCase().includes('malware') || target.toLowerCase().includes('danger');
+      
       const newItem: HistoryItem = {
         id: Date.now(),
         type: scanType,
         target: target,
         hash: scanType === 'apk' ? 'a1b2...c3d4' : undefined,
-        risk: Math.random() > 0.7 ? 'high' : 'low',
+        risk: isDemoHighRisk ? 'high' : 'low',
+        score: isDemoHighRisk ? 91 : 8,
+        summary: isDemoHighRisk 
+          ? (scanType === 'url' 
+              ? "Warning: This URL has been flagged as potentially dangerous. Our heuristic analysis detected patterns associated with phishing or malware distribution."
+              : "Critical: This APK file contains suspicious code patterns and requested excessive permissions that could compromise your device security.")
+          : (scanType === 'url'
+              ? "Analysis complete. This URL appears to be safe based on our current security database and heuristic checks."
+              : "Analysis complete. This APK file appears to be safe based on our current security database and heuristic checks."),
+        reason: isDemoHighRisk 
+          ? (scanType === 'url' ? 'Suspicious Patterns' : 'Suspicious Permissions')
+          : 'Verified Safe',
         time: 'Just now'
       };
+      
       setHistoryItems(prev => [newItem, ...prev]);
       setCurrentResult(newItem);
       setScreen(scanType === 'url' ? 'url-result' : 'apk-result');
