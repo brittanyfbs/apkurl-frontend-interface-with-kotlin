@@ -490,7 +490,7 @@ const HistoryScreen = ({
                 setSelectedIds([]);
               }}
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                isSelectionMode ? 'bg-blue-500 text-white' : 'bg-white/10 text-white'
+                isSelectionMode ? 'bg-blue-500 text-white' : 'bg-gray-100 text-black'
               }`}
             >
               {isSelectionMode ? 'Cancel' : 'Select'}
@@ -499,8 +499,8 @@ const HistoryScreen = ({
               onClick={() => handleDeleteClick(isSelectionMode ? 'selected' : 'all')}
               className={`p-2 rounded-xl shadow-sm transition-colors ${
                 (isSelectionMode && selectedIds.length > 0) || (!isSelectionMode && items.length > 0)
-                  ? 'bg-white/10 text-red-400 hover:bg-red-500/20' 
-                  : 'bg-white/5 text-gray-600 cursor-not-allowed'
+                  ? 'bg-red-50 text-red-400 hover:bg-red-100' 
+                  : 'bg-gray-50 text-gray-400 cursor-not-allowed'
               }`}
             >
               <Trash2 size={20} />
