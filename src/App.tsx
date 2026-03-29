@@ -22,7 +22,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 
 // --- Types ---
-type Screen = 'home' | 'url-scanner' | 'apk-scanner' | 'scanning' | 'history' | 'settings' | 'url-result' | 'apk-result';
+type Screen = 'home' | 'url-scanner' | 'apk-scanner' | 'scanning' | 'history' | 'settings' | 'url-result' | 'apk-result' | 'privacy-policy';
 type ScanType = 'url' | 'apk';
 
 interface HistoryItem {
@@ -640,7 +640,7 @@ const APKResultScreen = ({ item, onBack, onClose, customLogo }: { item: HistoryI
   const isHighRisk = item.risk === 'high';
   const riskColor = isHighRisk ? 'bg-red-500' : 'bg-[#3D8C40]';
   const darkRiskColor = isHighRisk ? 'bg-red-600' : 'bg-[#317033]';
-  const riskScore = isHighRisk ? '91%' : '08%';
+  const riskScore = isHighRisk ? '91%' : '8%';
 
   return (
     <div className="flex flex-col gap-6 pb-12 min-h-screen bg-[#F8F9FD]">
@@ -704,7 +704,47 @@ const APKResultScreen = ({ item, onBack, onClose, customLogo }: { item: HistoryI
   );
 };
 
-const SettingsScreen = ({ customLogo }: { customLogo: string | null }) => {
+const PrivacyPolicyScreen = ({ onBack }: { onBack: () => void }) => {
+  const policies = [
+    "APKURL does not collect, store, or share any personal user data.",
+    "The app only processes URLs and APK files provided manually by the user.",
+    "All analysis is performed locally on the device. No data is sent to external servers.",
+    "The app does not access contacts, messages, location, or other personal information.",
+    "Scan results are stored locally for history and can be deleted by the user at any time.",
+    "Deleted data cannot be recovered.",
+    "APKURL does not use third-party services that collect user data.",
+    "Users should remain cautious, as no security system is 100% accurate."
+  ];
+
+  return (
+    <div className="flex flex-col gap-8 pb-24">
+      <Header title="PRIVACY POLICY" onBack={onBack} showLogo={false} />
+      
+      <div className="bg-white rounded-[32px] p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-gray-50">
+        <div className="flex flex-col gap-6">
+          {policies.map((policy, index) => (
+            <div key={index} className="flex gap-4 items-start">
+              <div className="w-6 h-6 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-[10px] font-black text-[#2F6BFF]">{index + 1}</span>
+              </div>
+              <p className="text-sm font-medium text-gray-600 leading-relaxed">
+                {policy}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="bg-gray-50 p-6 rounded-[24px] border border-gray-100">
+        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">
+          Last Updated: March 28, 2026
+        </p>
+      </div>
+    </div>
+  );
+};
+
+const SettingsScreen = ({ customLogo, onNavigate }: { customLogo: string | null, onNavigate: (s: Screen) => void }) => {
   return (
     <div className="flex flex-col gap-8 pb-24">
       <Header title="SETTINGS" showLogo={false} />
@@ -712,13 +752,11 @@ const SettingsScreen = ({ customLogo }: { customLogo: string | null }) => {
       <div className="flex flex-col gap-4">
         <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] px-1">Support & Info</h3>
         <div className="bg-white rounded-[24px] shadow-[0_4px_20px_rgba(0,0,0,0.03)] overflow-hidden border border-gray-50">
-          <button className="w-full px-6 py-5 flex justify-between items-center hover:bg-gray-50 transition-colors">
+          <button 
+            onClick={() => onNavigate('privacy-policy')}
+            className="w-full px-6 py-5 flex justify-between items-center hover:bg-gray-50 transition-colors"
+          >
             <span className="font-bold text-gray-800">Privacy Policy</span>
-            <ChevronLeft size={20} className="rotate-180 text-gray-300" />
-          </button>
-          <div className="h-[1px] bg-gray-50 mx-6"></div>
-          <button className="w-full px-6 py-5 flex justify-between items-center hover:bg-gray-50 transition-colors">
-            <span className="font-bold text-gray-800">Terms of Service</span>
             <ChevronLeft size={20} className="rotate-180 text-gray-300" />
           </button>
         </div>
@@ -730,7 +768,7 @@ const SettingsScreen = ({ customLogo }: { customLogo: string | null }) => {
           <span className="font-black text-sm uppercase tracking-wider">Disclaimer</span>
         </div>
         <p className="text-xs font-medium text-blue-800/70 leading-relaxed">
-          APKURL uses advanced heuristic analysis and global threat databases to identify potential risks. However, no security scan is 100% definitive. Always exercise caution when installing unknown files.
+          APKURL provides risk analysis for URLs and APK files, but results are not 100% accurate. Users should always remain cautious. The app is not responsible for any damage or loss.
         </p>
       </div>
 
@@ -751,11 +789,7 @@ export default function App() {
     return localStorage.getItem('apkurl_custom_logo');
   });
   const [currentResult, setCurrentResult] = useState<HistoryItem | null>(null);
-  const [historyItems, setHistoryItems] = useState<HistoryItem[]>([
-    { id: 1, type: 'apk', target: 'com.example.app_v2.apk', hash: '8f2a...b3c1', risk: 'high', time: '2 mins ago' },
-    { id: 2, type: 'url', target: 'https://secure-login.net', risk: 'low', time: '1 hour ago' },
-    { id: 3, type: 'url', target: 'https://google.com', risk: 'low', time: 'Yesterday' },
-  ]);
+  const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
 
   const handleStartScan = (target: string) => {
     setScreen('scanning');
@@ -827,7 +861,10 @@ export default function App() {
               />
             )}
             {screen === 'settings' && (
-              <SettingsScreen customLogo={customLogo} />
+              <SettingsScreen customLogo={customLogo} onNavigate={setScreen} />
+            )}
+            {screen === 'privacy-policy' && (
+              <PrivacyPolicyScreen onBack={() => setScreen('settings')} />
             )}
             {screen === 'url-result' && currentResult && (
               <URLResultScreen 
