@@ -819,7 +819,7 @@ export default function App() {
         
         const newItem: HistoryItem = {
           id: Date.now(),
-          type: scanType,
+          type: target instanceof File ? 'apk' : 'url',
           target: target.name,
           hash: scanType === 'apk' ? 'a1b2...c3d4' : undefined,
           risk: data.risk || 'low',
@@ -831,13 +831,13 @@ export default function App() {
         
         setHistoryItems(prev => [newItem, ...prev]);
         setCurrentResult(newItem);
-        setScreen(scanType === 'url' ? 'url-result' : 'apk-result');
+        setScreen(target instanceof File ? 'apk-result' : 'url-result');
       } catch (error) {
         console.error('Scan failed:', error);
         // Fallback result if API fails
         const fallbackItem: HistoryItem = {
           id: Date.now(),
-          type: scanType,
+          type: target instanceof File ? 'apk' : 'url',
           target: target.name,
           hash: scanType === 'apk' ? 'a1b2...c3d4' : undefined,
           risk: 'low',
@@ -848,7 +848,7 @@ export default function App() {
         };
         setHistoryItems(prev => [fallbackItem, ...prev]);
         setCurrentResult(fallbackItem);
-        setScreen(scanType === 'url' ? 'url-result' : 'apk-result');
+        setScreen(target instanceof File ? 'apk-result' : 'url-result');
       }
     } else {
       // If input is NOT a File (URL):
@@ -856,7 +856,7 @@ export default function App() {
       // Return a fallback result (temporary)
       const fallbackItem: HistoryItem = {
         id: Date.now(),
-        type: scanType,
+        type: 'url',
         target: target,
         hash: undefined,
         risk: 'low',
