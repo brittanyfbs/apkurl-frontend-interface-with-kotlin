@@ -798,28 +798,57 @@ export default function App() {
   const [currentResult, setCurrentResult] = useState<HistoryItem | null>(null);
   const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
 
-  const handleStartScan = (target: string) => {
+  const handleStartScan = async (target: string) => {
     setScreen('scanning');
     
-    // Static demo data for UI design phase
-    // This will be replaced with an actual API call later
-    setTimeout(() => {
+    try {
+      const response = await fetch('http://127.0.0.1:5000/scan-url', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url: target }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const data = await response.json();
+      
       const newItem: HistoryItem = {
         id: Date.now(),
         type: scanType,
         target: target,
         hash: scanType === 'apk' ? 'a1b2...c3d4' : undefined,
-        risk: "high",
-        score: 91,
-        summary: "This APK file contains suspicious permissions and may be harmful.",
-        reason: "Suspicious Permissions",
+        risk: data.risk || 'low',
+        score: data.score ?? 50,
+        summary: data.summary || 'No summary available',
+        reason: data.reason || 'Unknown',
         time: 'Just now'
       };
       
       setHistoryItems(prev => [newItem, ...prev]);
       setCurrentResult(newItem);
       setScreen(scanType === 'url' ? 'url-result' : 'apk-result');
-    }, 5000);
+    } catch (error) {
+      console.error('Scan failed:', error);
+      // Fallback result if API fails
+      const fallbackItem: HistoryItem = {
+        id: Date.now(),
+        type: scanType,
+        target: target,
+        hash: scanType === 'apk' ? 'a1b2...c3d4' : undefined,
+        risk: 'low',
+        score: 0,
+        summary: 'The scan could not be completed due to a connection error. Please try again later.',
+        reason: 'Connection Error',
+        time: 'Just now'
+      };
+      setHistoryItems(prev => [fallbackItem, ...prev]);
+      setCurrentResult(fallbackItem);
+      setScreen(scanType === 'url' ? 'url-result' : 'apk-result');
+    }
   };
 
   const deleteItems = (ids: number[]) => {
