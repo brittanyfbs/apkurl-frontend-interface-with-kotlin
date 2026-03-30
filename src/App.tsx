@@ -852,22 +852,54 @@ export default function App() {
       }
     } else {
       // If input is NOT a File (URL):
-      // Do NOT call backend
-      // Return a fallback result (temporary)
-      const fallbackItem: HistoryItem = {
-        id: Date.now(),
-        type: 'url',
-        target: target,
-        hash: undefined,
-        risk: 'low',
-        score: 0,
-        summary: 'URL scanning is temporarily unavailable. This is a fallback result.',
-        reason: 'Temporary Fallback',
-        time: 'Just now'
-      };
-      setHistoryItems(prev => [fallbackItem, ...prev]);
-      setCurrentResult(fallbackItem);
-      setScreen('url-result');
+      try {
+        const response = await fetch('http://127.0.0.1:5000/scan-url', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ url: target }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+
+        const data = await response.json();
+
+        const newItem: HistoryItem = {
+          id: Date.now(),
+          type: 'url',
+          target: target,
+          hash: undefined,
+          risk: data.risk || 'low',
+          score: data.score ?? 50,
+          summary: data.summary || 'No summary available',
+          reason: data.reason || 'Unknown',
+          time: 'Just now'
+        };
+
+        setHistoryItems(prev => [newItem, ...prev]);
+        setCurrentResult(newItem);
+        setScreen('url-result');
+      } catch (error) {
+        console.error('URL scan failed:', error);
+        // Fallback result if API fails
+        const fallbackItem: HistoryItem = {
+          id: Date.now(),
+          type: 'url',
+          target: target,
+          hash: undefined,
+          risk: 'low',
+          score: 0,
+          summary: 'The URL scan could not be completed due to a connection error. Please try again later.',
+          reason: 'Connection Error',
+          time: 'Just now'
+        };
+        setHistoryItems(prev => [fallbackItem, ...prev]);
+        setCurrentResult(fallbackItem);
+        setScreen('url-result');
+      }
     }
   };
 
