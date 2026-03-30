@@ -285,7 +285,7 @@ const HomeScreen = ({
   );
 };
 
-const URLScannerScreen = ({ onBack, onStart, customLogo }: { onBack: () => void, onStart: (target: string) => void, customLogo: string | null }) => {
+const URLScannerScreen = ({ onBack, onStart, customLogo }: { onBack: () => void, onStart: (target: string | File) => void, customLogo: string | null }) => {
   const [url, setUrl] = useState('');
 
   return (
@@ -322,15 +322,15 @@ const URLScannerScreen = ({ onBack, onStart, customLogo }: { onBack: () => void,
   );
 };
 
-const APKScannerScreen = ({ onBack, onStart, customLogo }: { onBack: () => void, onStart: (target: string) => void, customLogo: string | null }) => {
+const APKScannerScreen = ({ onBack, onStart, customLogo }: { onBack: () => void, onStart: (target: string | File) => void, customLogo: string | null }) => {
   const [fileSelected, setFileSelected] = useState(false);
-  const [fileName, setFileName] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setFileName(file.name);
+      setSelectedFile(file);
       setFileSelected(true);
     }
   };
@@ -360,7 +360,7 @@ const APKScannerScreen = ({ onBack, onStart, customLogo }: { onBack: () => void,
         </div>
         <div className="w-full px-4">
           <p className="font-bold text-gray-800 text-lg truncate">
-            {fileSelected ? fileName : 'Choose APK File'}
+            {fileSelected ? selectedFile?.name : 'Choose APK File'}
           </p>
           <p className="text-sm font-medium text-gray-400">
             {fileSelected ? 'File ready for analysis' : 'or Drag & Drop'}
@@ -370,7 +370,7 @@ const APKScannerScreen = ({ onBack, onStart, customLogo }: { onBack: () => void,
 
       <button 
         disabled={!fileSelected}
-        onClick={() => onStart(fileName)}
+        onClick={() => selectedFile && onStart(selectedFile)}
         className={`w-full py-4 rounded-2xl font-bold text-white shadow-lg transition-all active:scale-[0.98] ${
           fileSelected ? 'bg-[#2F6BFF] shadow-blue-200' : 'bg-gray-300 cursor-not-allowed shadow-none'
         }`}
@@ -798,56 +798,76 @@ export default function App() {
   const [currentResult, setCurrentResult] = useState<HistoryItem | null>(null);
   const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
 
-  const handleStartScan = async (target: string) => {
+  const handleStartScan = async (target: string | File) => {
     setScreen('scanning');
     
-    try {
-      const response = await fetch('http://127.0.0.1:5000/scan-url', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ url: target }),
-      });
+    if (target instanceof File) {
+      try {
+        const formData = new FormData();
+        formData.append("file", target);
 
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
+        const response = await fetch('http://127.0.0.1:5000/scan', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+
+        const data = await response.json();
+        
+        const newItem: HistoryItem = {
+          id: Date.now(),
+          type: scanType,
+          target: target.name,
+          hash: scanType === 'apk' ? 'a1b2...c3d4' : undefined,
+          risk: data.risk || 'low',
+          score: data.score ?? 50,
+          summary: data.summary || 'No summary available',
+          reason: data.reason || 'Unknown',
+          time: 'Just now'
+        };
+        
+        setHistoryItems(prev => [newItem, ...prev]);
+        setCurrentResult(newItem);
+        setScreen(scanType === 'url' ? 'url-result' : 'apk-result');
+      } catch (error) {
+        console.error('Scan failed:', error);
+        // Fallback result if API fails
+        const fallbackItem: HistoryItem = {
+          id: Date.now(),
+          type: scanType,
+          target: target.name,
+          hash: scanType === 'apk' ? 'a1b2...c3d4' : undefined,
+          risk: 'low',
+          score: 0,
+          summary: 'The scan could not be completed due to a connection error. Please try again later.',
+          reason: 'Connection Error',
+          time: 'Just now'
+        };
+        setHistoryItems(prev => [fallbackItem, ...prev]);
+        setCurrentResult(fallbackItem);
+        setScreen(scanType === 'url' ? 'url-result' : 'apk-result');
       }
-
-      const data = await response.json();
-      
-      const newItem: HistoryItem = {
-        id: Date.now(),
-        type: scanType,
-        target: target,
-        hash: scanType === 'apk' ? 'a1b2...c3d4' : undefined,
-        risk: data.risk || 'low',
-        score: data.score ?? 50,
-        summary: data.summary || 'No summary available',
-        reason: data.reason || 'Unknown',
-        time: 'Just now'
-      };
-      
-      setHistoryItems(prev => [newItem, ...prev]);
-      setCurrentResult(newItem);
-      setScreen(scanType === 'url' ? 'url-result' : 'apk-result');
-    } catch (error) {
-      console.error('Scan failed:', error);
-      // Fallback result if API fails
+    } else {
+      // If input is NOT a File (URL):
+      // Do NOT call backend
+      // Return a fallback result (temporary)
       const fallbackItem: HistoryItem = {
         id: Date.now(),
         type: scanType,
         target: target,
-        hash: scanType === 'apk' ? 'a1b2...c3d4' : undefined,
+        hash: undefined,
         risk: 'low',
         score: 0,
-        summary: 'The scan could not be completed due to a connection error. Please try again later.',
-        reason: 'Connection Error',
+        summary: 'URL scanning is temporarily unavailable. This is a fallback result.',
+        reason: 'Temporary Fallback',
         time: 'Just now'
       };
       setHistoryItems(prev => [fallbackItem, ...prev]);
       setCurrentResult(fallbackItem);
-      setScreen(scanType === 'url' ? 'url-result' : 'apk-result');
+      setScreen('url-result');
     }
   };
 
